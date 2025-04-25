@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fettigkeit Clicker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background: #000;
+            color: #fff;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        .count {
+            font-size: 2em;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .button {
+            padding: 20px 40px;
+            font-size: 1.5em;
+            color: rgba(0, 0, 0, 0.4);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 30px; /* Mehr Abstand zum Text oben */
+            transition: 0.3s;
+
+            /* Hier wird das Bild als Hintergrund gesetzt */
+            background-image: url('Konrad.jpg'); /* Pfad zum Bild */
+            background-size: cover; /* Bild soll den gesamten Button bedecken */
+            background-position: center; /* Bild wird zentriert */
+        }
+        .button:hover {
+            background-color: #d8d8d8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Konrads Fettigkeit Clicker</h1>
+    <p>Konrad wiegt <span class="count">0</span> kg!</p>
+    <button class="button" id="fettigkeitButton" onclick="increaseFettigkeit()">Fettigkeit klicken!</button>
+
+    <script>
+        // WebSocket-Verbindung zum Server aufbauen
+        const socket = new WebSocket("ws://localhost:3000");
+
+        // Funktion zum Abrufen des aktuellen Zählers (nur für den ersten Start)
+        socket.onopen = () => {
+            console.log("WebSocket-Verbindung hergestellt!");
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            document.querySelector('.count').textContent = data.count;
+        };
+
+        // Speichern der ursprünglichen Button-Größe
+        const button = document.getElementById("fettigkeitButton");
+        const originalSize = {
+            fontSize: parseFloat(window.getComputedStyle(button).fontSize),
+            padding: {
+                top: parseFloat(window.getComputedStyle(button).paddingTop),
+                right: parseFloat(window.getComputedStyle(button).paddingRight),
+                bottom: parseFloat(window.getComputedStyle(button).paddingBottom),
+                left: parseFloat(window.getComputedStyle(button).paddingLeft)
+            }
+        };
+
+        let resizeTimeout;
+
+        // Funktion zum Erhöhen der Fettigkeit
+        function increaseFettigkeit() {
+            fetch('http://localhost:3000/click', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Neuer Fettigkeitswert:', data.count);
+            })
+            .catch(error => console.error('Fehler beim Erhöhen des Zählers:', error));
+
+            // Button wächst mit jedem Klick (ohne Begrenzung)
+            let currentSize = parseFloat(window.getComputedStyle(button).fontSize);
+            
+            // Der Button wächst bei jedem Klick weiter
+            button.style.fontSize = (currentSize * 1.1) + "px"; // Button wird 10% größer
+            button.style.padding = (originalSize.padding.top * 1.1) + "px " + 
+                                   (originalSize.padding.right * 1.1) + "px " + 
+                                   (originalSize.padding.bottom * 1.1) + "px " + 
+                                   (originalSize.padding.left * 1.1) + "px"; // Padding ebenfalls vergrößern
+
+            // Setze den Button zurück, wenn nicht geklickt wird
+            clearTimeout(resizeTimeout); // Lösche den alten Timer
+            resizeTimeout = setTimeout(resetButtonSize, 300); // Setze nach 2 Sekunden zurück
+        }
+
+        // Funktion zum Zurücksetzen der Button-Größe, wenn keine Interaktion erfolgt
+        function resetButtonSize() {
+            button.style.fontSize = originalSize.fontSize + "px"; // Zurücksetzen der ursprünglichen Schriftgröße
+            button.style.padding = `${originalSize.padding.top}px ${originalSize.padding.right}px ${originalSize.padding.bottom}px ${originalSize.padding.left}px`; // Zurücksetzen des ursprünglichen Paddings
+        }
+    </script>
+</body>
+</html>
