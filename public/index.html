@@ -48,7 +48,7 @@
 
     <script>
         // WebSocket-Verbindung zum Server aufbauen
-        const socket = new WebSocket("ws://localhost:3000");
+        const socket = new WebSocket("ws://"+window.location.host);
 
         // Funktion zum Abrufen des aktuellen Zählers (nur für den ersten Start)
         socket.onopen = () => {
@@ -76,7 +76,7 @@
 
         // Funktion zum Erhöhen der Fettigkeit
         function increaseFettigkeit() {
-            fetch('http://localhost:3000/click', {
+            fetch('/click', {
                 method: 'POST',
             })
             .then(response => response.json())
