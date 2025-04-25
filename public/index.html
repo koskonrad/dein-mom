@@ -48,7 +48,7 @@
 
     <script>
         // WebSocket-Verbindung zum Server aufbauen
-        const socket = new WebSocket("ws://"+window.location.host);
+        const socket = new WebSocket("wss://"+window.location.host);
 
         // Funktion zum Abrufen des aktuellen Zählers (nur für den ersten Start)
         socket.onopen = () => {
