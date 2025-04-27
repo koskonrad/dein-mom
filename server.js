@@ -10,16 +10,18 @@ const port = 3000;
 // Pfad zur Datei, in der der Fettigkeits-Count gespeichert wird
 const countFilePath = path.join(__dirname, "fettigkeitCount.json");
 
+
+function getFromFile() {
+  const data = fs.readFileSync(countFilePath, "utf8");
+  return JSON.parse(data).count || 0;
+}
+
+let count = getFromFile()
+
 // Funktion zum Lesen des aktuellen Zählers
-const getFettigkeitCount = () => {
-  try {
-    const data = fs.readFileSync(countFilePath, "utf8");
-    return JSON.parse(data).count || 0;
-  } catch (err) {
-    console.error("Fehler beim Lesen der Datei:", err);
-    return 0;
-  }
-};
+function getFettigkeitCount() {
+  return count
+}
 
 // Funktion zum Speichern des Zählers in der Datei
 const saveFettigkeitCount = (count) => {
@@ -44,7 +46,7 @@ app.get("/count", (req, res) => {
 app.post("/click", (req, res) => {
   const currentCount = getFettigkeitCount();
   const newCount = currentCount + 1;
-  saveFettigkeitCount(newCount);
+  count = count + 1
   // Alle WebSocket-Clients benachrichtigen, dass der Zähler erhöht wurde
   broadcastFettigkeitCount(newCount);
   res.json({ count: newCount });
@@ -74,6 +76,10 @@ const broadcastFettigkeitCount = (newCount) => {
     }
   });
 };
+
+setInterval(() => {
+  saveFettigkeitCount(newCount);
+}, 60 * 1000)
 
 // WebSocket-Verbindung beim HTTP-Upgrade einrichten
 app.server = app.listen(port, () => {
