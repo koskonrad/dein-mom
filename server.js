@@ -78,7 +78,7 @@ const broadcastFettigkeitCount = (newCount) => {
 };
 
 setInterval(() => {
-  saveFettigkeitCount(newCount);
+  saveFettigkeitCount(count);
 }, 60 * 1000)
 
 // WebSocket-Verbindung beim HTTP-Upgrade einrichten
