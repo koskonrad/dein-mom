@@ -75,31 +75,20 @@
     </footer>
 
     <script>
-        //setInterval(() => increaseFettigkeit(), 2);
         const socket = new WebSocket(`${window.location.protocol.replace('http', 'ws')}//${window.location.host}`);
-
+    
         socket.onopen = () => {
             console.log("WebSocket-Verbindung hergestellt!");
         };
-
+    
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             document.querySelector('.count').textContent = data.count;
+            updateButtonSize(data.count); // Button-Größe anpassen
         };
-
+    
         const button = document.getElementById("fettigkeitButton");
-        const originalSize = {
-            fontSize: parseFloat(window.getComputedStyle(button).fontSize),
-            padding: {
-                top: parseFloat(window.getComputedStyle(button).paddingTop),
-                right: parseFloat(window.getComputedStyle(button).paddingRight),
-                bottom: parseFloat(window.getComputedStyle(button).paddingBottom),
-                left: parseFloat(window.getComputedStyle(button).paddingLeft)
-            }
-        };
-
-        const multiplyFactor = 1.005;
-
+    
         function increaseFettigkeit() {
             fetch('/click', {
                 method: 'POST',
@@ -107,17 +96,24 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Neuer Fettigkeitswert:', data.count);
+                // Update kommt eh über WebSocket, hier optional nochmal lokal
+                // updateButtonSize(data.count);
             })
             .catch(error => console.error('Fehler beim Erhöhen des Zählers:', error));
-
-            let currentSize = parseFloat(window.getComputedStyle(button).fontSize);
-
-            button.style.fontSize = (currentSize * multiplyFactor) + "px";
-            button.style.padding = (originalSize.padding.top * multiplyFactor) + "px " + 
-                                   (originalSize.padding.right * multiplyFactor) + "px " + 
-                                   (originalSize.padding.bottom * multiplyFactor) + "px " + 
-                                   (originalSize.padding.left * multiplyFactor) + "px";
+        }
+    
+        function updateButtonSize(count) {
+            const baseFontSize = 24; // px
+            const basePadding = 20; // px
+            const scaleFactor = 0.0005; // wie stark pro 1kg wachsen soll
+    
+            const fontSize = baseFontSize + count * scaleFactor;
+            const padding = basePadding + count * scaleFactor;
+    
+            button.style.fontSize = fontSize + "px";
+            button.style.padding = `${padding}px ${padding * 2}px ${padding}px ${padding * 2}px`;
         }
     </script>
+    
 </body>
 </html>

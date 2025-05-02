@@ -31,6 +31,17 @@ const saveFettigkeitCount = (count) => {
 
 // Statische Dateien aus dem "public"-Ordner bereitstellen
 app.use(express.static(path.join(__dirname, "public")));
+// "Saubere" Routen wie /konrad ohne .html-Endung erlauben
+
+app.get("/:page", (req, res, next) => {
+  const page = req.params.page;
+  const filePath = path.join(__dirname, "public", `${page}.html`);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    next(); // Wenn nicht gefunden, zur nächsten Middleware (z.B. 404) weitergehen
+  }
+});
 
 // Middleware
 app.use(cors());
