@@ -7,7 +7,7 @@
     <style>
         html, body {
             margin: 0;
-            padding: 0;
+            padding: 0; 
             height: 100%;
             background: #000;
             color: #fff;
@@ -37,13 +37,13 @@
         }
 
         .button {
-            padding: 20px 40px;
+            padding: 200px 50px;
             font-size: 1.5em;
             color: rgba(0, 0, 0, 0.6);
             border: 2px solid #fff;
             border-radius: 10px;
             cursor: pointer;
-            margin-top: 30px;
+            margin-top: 50px;
             transition: 0.3s;
             background-image: url('Konrad.jpg');
             background-size: cover;
@@ -75,7 +75,7 @@
     </footer>
 
     <script>
-        //setInterval(() => increaseFettigkeit(), 10)
+        //setInterval(() => increaseFettigkeit(), 2);
         const socket = new WebSocket(`${window.location.protocol.replace('http', 'ws')}//${window.location.host}`);
 
         socket.onopen = () => {
