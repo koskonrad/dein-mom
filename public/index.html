@@ -1,119 +1,119 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deine Fette Mom</title>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0; 
-            height: 100%;
-            background: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deine Fette Mom</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0; 
+      height: 100%;
+      background: url('/background.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #000;
+      font-family: Arial, sans-serif;
+    }
 
-        body {
-            display: flex;
-            flex-direction: column;
-        }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-        .content {
-            flex: 1;
-            text-align: center;
-            margin-top: 50px;
-        }
+    .content {
+      flex: 1;
+      text-align: center;
+      margin-top: 50px;
+    }
 
-        h1 {
-            font-size: 3em;
-            margin-bottom: 20px;
-        }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+    }
 
-        .count {
-            font-size: 2em;
-            margin-top: 20px;
-            font-weight: bold;
-        }
+    .count {
+      font-size: 2em;
+      margin-top: 20px;
+      font-weight: bold;
+    }
 
-        .button {
-            padding: 200px 50px;
-            font-size: 1.5em;
-            color: rgba(0, 0, 0, 0.6);
-            border: 2px solid #fff;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 50px;
-            transition: 0.3s;
-            background-image: url('Konrad.jpg');
-            background-size: cover;
-            background-position: center;
-        }
+    .image-button-wrapper {
+      position: relative;
+      width: 200px;
+      aspect-ratio: 9 / 16;
+      margin: 0 auto;
+      transition: width 0.3s ease;
+    }
 
-        .button:hover {
-            background-color: #d8d8d8;
-        }
+    .button-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: width 0.3s ease;
+    }
 
-        footer {
-            background-color: #111;
-            color: #aaa;
-            font-size: 0.9em;
-            padding: 20px;
-            text-align: center;
-        }
-    </style>
+    footer {
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      background-color: #111;
+      color: #aaa;
+      font-size: 0.9em;            
+    }
+
+  </style>
 </head>
 <body>
-    <div class="content">
-        <h1>Wie fett ist deine Mom?</h1>
-        <p>Deine Mom wiegt <span class="count">0</span> kg!</p>
-        <button class="button" id="fettigkeitButton" onclick="increaseFettigkeit()">Fettigkeit klicken!</button>
-    </div>
 
-    <footer>
-        © 2025 deine.mom — Fettigkeit für alle. Kontakt: ich.fick@deine.mom
-    </footer>
+  <div class="content">
+    <h1>Wie fett ist deine Mom?</h1>
+    <p>Deine Mom wiegt <span class="count">0</span> kg!</p>
+  </div>
 
-    <script>
-        const socket = new WebSocket(`${window.location.protocol.replace('http', 'ws')}//${window.location.host}`);
-    
-        socket.onopen = () => {
-            console.log("WebSocket-Verbindung hergestellt!");
-        };
-    
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            document.querySelector('.count').textContent = data.count;
-            updateButtonSize(data.count); // Button-Größe anpassen
-        };
-    
-        const button = document.getElementById("fettigkeitButton");
-    
-        function increaseFettigkeit() {
-            fetch('/click', {
-                method: 'POST',
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Neuer Fettigkeitswert:', data.count);
-                // Update kommt eh über WebSocket, hier optional nochmal lokal
-                // updateButtonSize(data.count);
-            })
-            .catch(error => console.error('Fehler beim Erhöhen des Zählers:', error));
-        }
-    
-        function updateButtonSize(count) {
-            const baseFontSize = 24; // px
-            const basePadding = 20; // px
-            const scaleFactor = 0.0005; // wie stark pro 1kg wachsen soll
-    
-            const fontSize = baseFontSize + count * scaleFactor;
-            const padding = basePadding + count * scaleFactor;
-    
-            button.style.fontSize = fontSize + "px";
-            button.style.padding = `${padding}px ${padding * 2}px ${padding}px ${padding * 2}px`;
-        }
-    </script>
-    
+  <div class="image-button-wrapper" id="fettigkeitButton">
+    <img src="/Konrad1.png" alt="Button-Grafik" class="button-image" onclick="increaseFettigkeit()">
+  </div>
+      
+  <footer>
+     © 2025 deine.mom — Fettigkeit für alle. Kontakt: ich.fick@deine.mom
+  </footer>
+  
+  <script>
+    const socket = new WebSocket(`${window.location.protocol.replace('http', 'ws')}//${window.location.host}`);
+
+    socket.onopen = () => console.log("WebSocket verbunden");
+
+    socket.onmessage = ({ data }) => {
+      const { count } = JSON.parse(data);
+      document.querySelector('.count').textContent = count;
+      updateButtonSize(count);
+    };
+
+    function increaseFettigkeit() {
+      fetch('/click', { method: 'POST' })
+        .catch(e => console.error(e));
+    }
+
+    function updateButtonSize(count) {
+      const baseWidth   = 200;
+      const scaleFactor = 0.01;
+      const step        = 50000;
+
+      const stepCount  = Math.floor(count / step);
+      const withinStep = count % step;
+      const delta      = (withinStep === 0 && count !== 0) ? 0 : withinStep * scaleFactor;
+      const newWidth   = baseWidth + delta;
+
+      const wrapper = document.getElementById("fettigkeitButton");
+      const img     = wrapper.querySelector(".button-image");
+
+      wrapper.style.width = `${newWidth}px`;
+      img.style.width     = '100%';
+
+      const imageIndex = Math.min(stepCount + 1, 5);
+      img.src = `/Konrad${imageIndex}.png`;
+    }
+  </script>
 </body>
 </html>
