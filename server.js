@@ -7,39 +7,45 @@ const WebSocket = require("ws");
 const app = express();
 const port = 3000;
 
-// Pfad zur Datei, in der der Fettigkeits-Count gespeichert wird
-const countFilePath = path.join(__dirname, "fettigkeitCount.json");
+// Pfade zu den beiden Zähler-Dateien
+const countFilePath    = path.join(__dirname, "fettigkeitCount.json");
+const countMomFilePath = path.join(__dirname, "countmom.json");
 
-
-function getFromFile() {
-  const data = fs.readFileSync(countFilePath, "utf8");
-  return JSON.parse(data).count || 0;
-}
-
-let count = getFromFile()
-
-// Funktion zum Lesen des aktuellen Zählers
+// Hilfsfunktionen zum Einlesen
 function getFettigkeitCount() {
-  return count
+  const raw = fs.readFileSync(countFilePath, "utf8");
+  return JSON.parse(raw).count || 0;
 }
 
-// Funktion zum Speichern des Zählers in der Datei
-const saveFettigkeitCount = (count) => {
-  const data = JSON.stringify({ count });
-  fs.writeFileSync(countFilePath, data, "utf8");
+function getMomCount() {
+  const raw = fs.readFileSync(countMomFilePath, "utf8");
+  return JSON.parse(raw).countmom || 0;
+}
+
+// Aktuelle Werte in Variablen
+let count    = getFettigkeitCount();
+let countmom = getMomCount();
+
+// Hilfsfunktionen zum Speichern
+const saveFettigkeitCount = (c) => {
+  fs.writeFileSync(countFilePath, JSON.stringify({ count: c }), "utf8");
 };
 
-// Statische Dateien aus dem "public"-Ordner bereitstellen
-app.use(express.static(path.join(__dirname, "public")));
-// "Saubere" Routen wie /konrad ohne .html-Endung erlauben
+const saveMomCount = (c) => {
+  fs.writeFileSync(countMomFilePath, JSON.stringify({ countmom: c }), "utf8");
+};
 
+// Statische Dateien aus "public"
+app.use(express.static(path.join(__dirname, "public")));
+
+// Schöne Routen ohne .html
 app.get("/:page", (req, res, next) => {
-  const page = req.params.page;
+  const page    = req.params.page;
   const filePath = path.join(__dirname, "public", `${page}.html`);
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
   } else {
-    next(); // Wenn nicht gefunden, zur nächsten Middleware (z.B. 404) weitergehen
+    next();
   }
 });
 
@@ -47,57 +53,75 @@ app.get("/:page", (req, res, next) => {
 app.use(cors());
 app.use(express.json());
 
-// GET: aktuellen Fettigkeits-Count abrufen
+// REST-Endpoints für count
 app.get("/count", (req, res) => {
-  const count = getFettigkeitCount();
+  res.json({ count: getFettigkeitCount() });
+});
+
+app.post("/click", (req, res) => {
+  count++;
+  saveFettigkeitCount(count);
+  broadcastFettigkeitCount(count);
   res.json({ count });
 });
 
-// POST: Fettigkeit erhöhen
-app.post("/click", (req, res) => {
-  const currentCount = getFettigkeitCount();
-  const newCount = currentCount + 1;
-  count = count + 1
-  // Alle WebSocket-Clients benachrichtigen, dass der Zähler erhöht wurde
-  broadcastFettigkeitCount(newCount);
-  res.json({ count: newCount });
+// REST-Endpoints für countmom
+app.get("/countmom", (req, res) => {
+  res.json({ countmom: getMomCount() });
 });
 
-// WebSocket Server erstellen
+app.post("/clickmom", (req, res) => {
+  countmom++;
+  saveMomCount(countmom);
+  broadcastMomCount(countmom);
+  res.json({ countmom });
+});
+
+// WebSocket-Server (kein eigener HTTP-Port)
 const wss = new WebSocket.Server({ noServer: true });
 
-// WebSocket-Client-Verbindungen
 wss.on("connection", (ws) => {
   console.log("Neuer WebSocket-Client verbunden!");
-  
-  // Initialer Zähler an den Client senden
-  ws.send(JSON.stringify({ count: getFettigkeitCount() }));
+  // Initial beide Werte senden
+  ws.send(JSON.stringify({
+    count:    getFettigkeitCount(),
+    countmom: getMomCount()
+  }));
 
-  // WebSocket-Nachrichten empfangen
-  ws.on("message", (message) => {
-    console.log("Nachricht vom Client erhalten:", message);
+  ws.on("message", (msg) => {
+    console.log("Nachricht vom Client:", msg);
   });
 });
 
-// Broadcast-Funktion: Benachrichtigt alle WebSocket-Clients
+// Broadcast-Funktionen
 const broadcastFettigkeitCount = (newCount) => {
-  wss.clients.forEach((client) => {
+  for (const client of wss.clients) {
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ count: newCount }));
     }
-  });
+  }
 };
 
+const broadcastMomCount = (newCount) => {
+  for (const client of wss.clients) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ countmom: newCount }));
+    }
+  }
+};
+
+// Periodisch beide Zähler speichern
 setInterval(() => {
   saveFettigkeitCount(count);
-}, 60 * 1000)
+  saveMomCount(countmom);
+}, 60 * 1000);
 
-// WebSocket-Verbindung beim HTTP-Upgrade einrichten
-app.server = app.listen(port, () => {
+// HTTP-Server starten und WebSocket-Upgrade abfangen
+const server = app.listen(port, () => {
   console.log(`🍔 Fettigkeit-Server läuft auf http://localhost:${port}`);
 });
 
-app.server.on("upgrade", (request, socket, head) => {
+server.on("upgrade", (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit("connection", ws, request);
   });

@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
@@ -32,7 +32,8 @@
       margin-bottom: 20px;
     }
 
-    .count {
+    /* Nur die Klasse geändert */
+    .countmom {
       font-size: 2em;
       margin-top: 20px;
       font-weight: bold;
@@ -51,6 +52,7 @@
       height: auto;
       display: block;
       transition: width 0.3s ease;
+      cursor: pointer;
     }
 
     footer {
@@ -61,18 +63,22 @@
       color: #aaa;
       font-size: 0.9em;            
     }
-
   </style>
 </head>
 <body>
 
   <div class="content">
     <h1>Wie fett ist deine Mom?</h1>
-    <p>Deine Mom wiegt <span class="count">0</span> kg!</p>
+    <!-- hier class="count" → class="countmom" -->
+    <p>Deine Mom wiegt <span class="countmom">0</span> kg!</p>
   </div>
 
   <div class="image-button-wrapper" id="fettigkeitButton">
-    <img src="/Konrad1.png" alt="Button-Grafik" class="button-image" onclick="increaseFettigkeit()">
+    <!-- onclick bleibt, Funktion heißt jetzt increaseMom -->
+    <img src="/Konrad1.png"
+         alt="Button-Grafik"
+         class="button-image"
+         onclick="increaseMom()">
   </div>
       
   <footer>
@@ -80,29 +86,36 @@
   </footer>
   
   <script>
-    const socket = new WebSocket(`${window.location.protocol.replace('http', 'ws')}//${window.location.host}`);
+    // WebSocket wie gehabt
+    const socket = new WebSocket(
+      (location.protocol === "https:" ? "wss://" : "ws://") +
+      location.host
+    );
 
     socket.onopen = () => console.log("WebSocket verbunden");
 
     socket.onmessage = ({ data }) => {
-      const { count } = JSON.parse(data);
-      document.querySelector('.count').textContent = count;
-      updateButtonSize(count);
+      // statt msg.count holen wir msg.countmom
+      const { countmom } = JSON.parse(data);
+      document.querySelector('.countmom').textContent = countmom;
+      updateButtonSize(countmom);
     };
 
-    function increaseFettigkeit() {
-      fetch('/click', { method: 'POST' })
+    // statt increaseFettigkeit() jetzt increaseMom()
+    function increaseMom() {
+      fetch('/clickmom', { method: 'POST' })
         .catch(e => console.error(e));
     }
 
-    function updateButtonSize(count) {
+    // updateButtonSize bleibt exakt gleich, nur Parameter heißt now countmom
+    function updateButtonSize(countmom) {
       const baseWidth   = 200;
       const scaleFactor = 0.01;
       const step        = 50000;
 
-      const stepCount  = Math.floor(count / step);
-      const withinStep = count % step;
-      const delta      = (withinStep === 0 && count !== 0) ? 0 : withinStep * scaleFactor;
+      const stepCount  = Math.floor(countmom / step);
+      const withinStep = countmom % step;
+      const delta      = (withinStep === 0 && countmom !== 0) ? 0 : withinStep * scaleFactor;
       const newWidth   = baseWidth + delta;
 
       const wrapper = document.getElementById("fettigkeitButton");
