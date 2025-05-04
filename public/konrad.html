@@ -10,7 +10,7 @@
     html, body {
       background: url(/assets/Twitchbanner.png);
       background-size: cover;
-      color: #FFF;
+      color: #ffffff;
     }
 
     body {
@@ -38,10 +38,10 @@
     }
 
     .button {
-      padding: 100px 40px;
+      padding: 120px 30px;
       font-size: 1.5em;
       color: rgb(0, 0, 0);
-      border: none;
+      border: 5px solid #ffffff;
       border-radius: 10px;
       cursor: pointer;
       margin-top: 30px;
@@ -69,18 +69,24 @@
   <div id="burger-menu"></div>
 
   <div class="main">
-    <h1 style="padding: 20px; display: inline-block; background-color: #111111ac; margin: 0">
+    <h1 style="padding: 20px; display: inline-block; background-color: #11111153; margin: 0; border-radius: 10px">
         Konrads Fettigkeit Clicker
     </h1>
-    <p>Konrad wiegt <span class="count">0</span> kg!</p>
+    <p style="padding: 20px; display: block; background-color: #11111153; border-radius: 10px; margin: 20px auto; max-width: 500px;">
+      Konrad wiegt
+      <span class="count">
+        0
+      </span>
+      kg!
+    </p>
     <button class="button" id="fettigkeitButton" onclick="increaseFettigkeit()">
       Fettigkeit klicken!
     </button>
     <br>
-    <h1 style="padding: 20px; display: inline-block; background-color: #111111ac; margin: 20px 0">
+    <h1 style="padding: 20px; display: inline-block; background-color: #11111153; margin: 20px 0; border-radius: 10px">
         Konrads Kontostand Clicker<br>
         <span style="color: red;">COMING SOON!</span>
-      </h1>    
+      </h1>
   </div>
 
   <footer>

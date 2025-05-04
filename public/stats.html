@@ -1,68 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
-    <script src="/functions.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deine Fette Mom</title>
+  <style>
+    html, body {
+      background-color: #000;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+    }
+    .stats {
+      position: absolute;
+      border: #fff 10px solid;
+      font-size: 6rem;
+      background: linear-gradient(to right, red, purple, blue, cyan, green, yellow, orange, red);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+    .glitch-clone {
+      position: absolute;
+      border: #fff 10px solid;
+      font-size: 6rem;
+      background: linear-gradient(to right, red, purple, blue, cyan, green, yellow, orange, red);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      z-index: 999;
+    }
+  </style>
 </head>
 <body>
-    <style>
-    @import url('/styles.css');
+  <div class="stats">
+    stats für: <span id="name">–</span><br>
+    deine mom kg: <span id="mom-kg">0</span><br>
+    deine konrad kg: <span id="konrad-kg">0</span><br>
+  </div>
 
-    .stats {
-        margin-top: 0px;
-        margin-bottom: 10px;
-        font-size: 6rem;
-        background: linear-gradient(to right, red, purple, blue, cyan, green, yellow, orange, red);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: an infinite 10s reverse linear;
-    }
+  <script>
+    // Initiales Befüllen
+    fetch('/me').then(r=>r.json()).then(d=>document.getElementById('name').innerText = d.username);
+    fetch('/mom').then(r=>r.json()).then(d=>document.getElementById('mom-kg').innerText = d.count);
+    fetch('/fettigkeit').then(r=>r.json()).then(d=>document.getElementById('konrad-kg').innerText = d.count);
+  </script>
 
-    @keyframes an {
-        from {
-            transform: rotate(0deg)
+  <script type="module">
+    import confetti from 'https://cdn.skypack.dev/canvas-confetti';
+    setInterval(() => confetti(), 100);
+  </script>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const orig      = document.querySelector(".stats");
+      let x           = Math.random()*(window.innerWidth-orig.offsetWidth),
+          y           = Math.random()*(window.innerHeight-orig.offsetHeight);
+      let vx          = 3, vy = 2;
+      const baseVx    = vx, baseVy = vy;
+      let glitched    = false;
+
+      orig.style.left = x + "px";
+      orig.style.top  = y + "px";
+
+      function animate() {
+        // Bounce & Speed-Up
+        if (x <= 0 || x + orig.offsetWidth  >= window.innerWidth)  vx = -vx*1.2;
+        if (y <= 0 || y + orig.offsetHeight >= window.innerHeight) vy = -vy*1.2;
+        
+        // Zufalls-Jitter auch für Original, wenn Glitch gestartet
+        if (glitched) {
+          vx += (Math.random()-0.5)*0.5;
+          vy += (Math.random()-0.5)*0.5;
         }
 
-        to {
-            transform: rotate(360deg)
+        x += vx; y += vy;
+        orig.style.left = Math.max(0, Math.min(x, window.innerWidth - orig.offsetWidth)) + "px";
+        orig.style.top  = Math.max(0, Math.min(y, window.innerHeight - orig.offsetHeight)) + "px";
+
+        // Glitch-Trigger ab 20×
+        if (!glitched && (Math.abs(vx/baseVx)>=30 || Math.abs(vy/baseVy)>=30)) {
+          glitched = true;
+          spawnClones();
         }
-    }
-    </style>
-    <div class="stats">
-        stats für: <span id="name"></span> <br>
-        deine mom kg: <span id="mom-kg"></span> <br>
-        deine konrad kg: <span id="konrad-kg"></span> <br>
+        requestAnimationFrame(animate);
+      }
+      animate();
 
-    </div>
-    <script>
-        const momspan = document.getElementById('mom-kg')
-        const konradspan = document.getElementById('konrad-kg')
-        const name = document.getElementById('name')
-        fetch('/me')
-            .then(r => r.json())
-            .then(({username}) => {
-                name.innerText = username
-            })
-        fetch('/mom')
-            .then(r => r.json())
-            .then(({count}) => {
-                momspan.innerText = count
-            })
-            
-        fetch('/fettigkeit')
-            .then(r => r.json())
-            .then(({count}) => {
-                konradspan.innerText = count
-            })
-    </script>
+      function spawnClones() {
+        const rect   = orig.getBoundingClientRect();
+        const clones = [];
+        for (let i=0; i<12; i++){
+          const c        = orig.cloneNode(true);
+          c.classList.add("glitch-clone");
+          document.body.appendChild(c);
+          c._x           = rect.left;
+          c._y           = rect.top;
+          c._vx          = (Math.random()*6+2)*(Math.random()<0.5?-1:1);
+          c._vy          = (Math.random()*6+2)*(Math.random()<0.5?-1:1);
+          clones.push(c);
+        }
+        animateClones(clones);
+      }
 
-    <script type="module">
-        import confetti from 'https://cdn.skypack.dev/canvas-confetti';
-        setInterval(() => confetti(), 100)
-    </script>
-
+      function animateClones(clones) {
+        clones.forEach(c => {
+          // Zufalls-Jitter
+          c._vx += (Math.random()-0.5)*0.5;
+          c._vy += (Math.random()-0.5)*0.5;
+          // Bounce
+          if (c._x <= 0 || c._x + c.offsetWidth  >= window.innerWidth)  c._vx = -c._vx;
+          if (c._y <= 0 || c._y + c.offsetHeight>= window.innerHeight) c._vy = -c._vy;
+          c._x += c._vx; c._y += c._vy;
+          c.style.left = Math.max(0, Math.min(c._x, window.innerWidth - c.offsetWidth)) + "px";
+          c.style.top  = Math.max(0, Math.min(c._y, window.innerHeight - c.offsetHeight)) + "px";
+        });
+        requestAnimationFrame(()=>animateClones(clones));
+      }
+    });
+  </script>
 </body>
 </html>
