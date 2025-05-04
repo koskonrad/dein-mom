@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Deine Fette Mom</title>
   <style>
+        @import url('/styles.css');
     html, body {
       background-color: #000;
       margin: 0;
@@ -39,6 +40,9 @@
   </style>
 </head>
 <body>
+
+    <div id="burger-menu"></div>
+
   <div class="stats">
     stats für: <span id="name">–</span><br>
     deine mom kg: <span id="mom-kg">0</span><br>
@@ -51,6 +55,7 @@
     fetch('/mom').then(r=>r.json()).then(d=>document.getElementById('mom-kg').innerText = d.count);
     fetch('/fettigkeit').then(r=>r.json()).then(d=>document.getElementById('konrad-kg').innerText = d.count);
   </script>
+  <script src="/hamburgermenu.js"></script>
 
   <script type="module">
     import confetti from 'https://cdn.skypack.dev/canvas-confetti';
@@ -58,6 +63,7 @@
   </script>
 
   <script>
+    createHamburgerMenu()
     window.addEventListener("DOMContentLoaded", () => {
       const orig      = document.querySelector(".stats");
       let x           = Math.random()*(window.innerWidth-orig.offsetWidth),
@@ -84,8 +90,7 @@
         orig.style.left = Math.max(0, Math.min(x, window.innerWidth - orig.offsetWidth)) + "px";
         orig.style.top  = Math.max(0, Math.min(y, window.innerHeight - orig.offsetHeight)) + "px";
 
-        // Glitch-Trigger ab 20×
-        if (!glitched && (Math.abs(vx/baseVx)>=30 || Math.abs(vy/baseVy)>=30)) {
+        if (!glitched && (Math.abs(vx/baseVx)>=40 || Math.abs(vy/baseVy)>=40)) {
           glitched = true;
           spawnClones();
         }
