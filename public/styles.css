@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Comic+Relief:wght@400;700&family=Funnel+Display:wght@300..800&family=Parkinsans:wght@300..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+* {
+    font-family: "Comic Sans MS", "Comic Sans", 'Comic Neue', sans-serif;
+}
+
+
+#login {
+    margin: auto;
+    max-width: 500px;
+    margin-top: 40px;
+
+
+    input,
+    button {
+        padding: 20px;
+        font-size: 30px;
+        display: block;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+}
+
+
+
+
+#burger-menu {
+    position: absolute;
+    top: 100px;
+    right: 100px;
+    width: 30px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+#burger-menu .bar {
+    height: 4px;
+    background: #ffffff;
+    margin: 5px 0;
+    transition: 0.3s;
+}
+
+#burger-menu .dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#burger-menu:hover .dropdown {
+    display: block;
+}
+
+#burger-menu .dropdown a {
+    display: block;
+    padding: 10px 20px;
+    color: #000000;
+    text-decoration: none;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+#burger-menu .dropdown a:hover {
+    background: #eee;
+}
+
+#burger-menu .username {
+    padding: 10px;
+    display: block;
+}

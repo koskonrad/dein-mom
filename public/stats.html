@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="/functions.js"></script>
+</head>
+<body>
+    <style>
+    @import url('/styles.css');
+
+    .stats {
+        margin-top: 0px;
+        margin-bottom: 10px;
+        font-size: 6rem;
+        background: linear-gradient(to right, red, purple, blue, cyan, green, yellow, orange, red);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: an infinite 10s reverse linear;
+    }
+
+    @keyframes an {
+        from {
+            transform: rotate(0deg)
+        }
+
+        to {
+            transform: rotate(360deg)
+        }
+    }
+    </style>
+    <div class="stats">
+        stats für: <span id="name"></span> <br>
+        deine mom kg: <span id="mom-kg"></span> <br>
+        deine konrad kg: <span id="konrad-kg"></span> <br>
+
+    </div>
+    <script>
+        const momspan = document.getElementById('mom-kg')
+        const konradspan = document.getElementById('konrad-kg')
+        const name = document.getElementById('name')
+        fetch('/me')
+            .then(r => r.json())
+            .then(({username}) => {
+                name.innerText = username
+            })
+        fetch('/mom')
+            .then(r => r.json())
+            .then(({count}) => {
+                momspan.innerText = count
+            })
+            
+        fetch('/fettigkeit')
+            .then(r => r.json())
+            .then(({count}) => {
+                konradspan.innerText = count
+            })
+    </script>
+
+    <script type="module">
+        import confetti from 'https://cdn.skypack.dev/canvas-confetti';
+        setInterval(() => confetti(), 100)
+    </script>
+
+</body>
+</html>

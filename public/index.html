@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deine Fette Mom</title>
   <style>
+    @import url('/styles.css');
+    
     html, body {
-      margin: 0;
-      padding: 0; 
-      height: 100%;
-      background: url('/background.png') no-repeat center center fixed;
+      background: url('/assets//background.png') no-repeat center center fixed;
       background-size: cover;
-      color: #000;
-      font-family: Arial, sans-serif;
+      color: #000000;
     }
 
     body {
@@ -63,9 +61,11 @@
       color: #aaa;
       font-size: 0.9em;            
     }
+
   </style>
 </head>
 <body>
+  <div id="burger-menu"></div>
 
   <div class="content">
     <h1>Wie fett ist deine Mom?</h1>
@@ -80,32 +80,22 @@
          class="button-image"
          onclick="increaseMom()">
   </div>
-      
+
   <footer>
      © 2025 deine.mom — Fettigkeit für alle. Kontakt: ich.fick@deine.mom
   </footer>
   
+  <script src="/functions.js"></script>
+  <script src="/hamburgermenu.js"></script>
   <script>
-    // WebSocket wie gehabt
-    const socket = new WebSocket(
-      (location.protocol === "https:" ? "wss://" : "ws://") +
-      location.host
-    );
+    createHamburgerMenu()
 
-    socket.onopen = () => console.log("WebSocket verbunden");
+    openWebSocket(({ mom_count }) => {
+      document.querySelector('.countmom').textContent = mom_count;
+      updateButtonSize(mom_count);
+    })
 
-    socket.onmessage = ({ data }) => {
-      // statt msg.count holen wir msg.countmom
-      const { countmom } = JSON.parse(data);
-      document.querySelector('.countmom').textContent = countmom;
-      updateButtonSize(countmom);
-    };
-
-    // statt increaseFettigkeit() jetzt increaseMom()
-    function increaseMom() {
-      fetch('/clickmom', { method: 'POST' })
-        .catch(e => console.error(e));
-    }
+    const increaseMom = () => increaseCount('mom')
 
     // updateButtonSize bleibt exakt gleich, nur Parameter heißt now countmom
     function updateButtonSize(countmom) {
@@ -125,7 +115,7 @@
       img.style.width     = '100%';
 
       const imageIndex = Math.min(stepCount + 1, 5);
-      img.src = `/Konrad${imageIndex}.png`;
+      img.src = `/assets/Konrad${imageIndex}.png`;
     }
   </script>
 </body>

@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fettigkeit Clicker</title>
   <style>
+    @import url('/styles.css');
+    
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: url(Twitchbanner.png);
-      color: #ffffff;
-      font-family: Arial, sans-serif;
+      background: url(/assets/Twitchbanner.png);
+      background-size: cover;
+      color: #FFF;
     }
 
     body {
@@ -39,7 +38,7 @@
     }
 
     .button {
-      padding: 70px 40px;
+      padding: 100px 40px;
       font-size: 1.5em;
       color: rgb(0, 0, 0);
       border: none;
@@ -47,7 +46,7 @@
       cursor: pointer;
       margin-top: 30px;
       transition: 0.3s;
-      background-image: url('Konrad.jpg');
+      background-image: url('/assets/Konrad.jpg');
       background-size: cover;
       background-position: center;
     }
@@ -66,6 +65,9 @@
   </style>
 </head>
 <body>
+  
+  <div id="burger-menu"></div>
+
   <div class="main">
     <h1 style="padding: 20px; display: inline-block; background-color: #111111ac; margin: 0">
         Konrads Fettigkeit Clicker
@@ -75,11 +77,6 @@
       Fettigkeit klicken!
     </button>
     <br>
-    <a href="https://www.twitch.tv/koskonrad"
-       style="color:#fff; font-size:1.2em; display:block; margin-top:40px;"
-       target="_blank">
-      ➤ Besuche Konrad persönlich
-    </a>
     <h1 style="padding: 20px; display: inline-block; background-color: #111111ac; margin: 20px 0">
         Konrads Kontostand Clicker<br>
         <span style="color: red;">COMING SOON!</span>
@@ -87,16 +84,22 @@
   </div>
 
   <footer>
-    © 2025 deine.mom — Fettigkeit für alle. Kontakt: ich.fick@deine.mom
+  <a href="https://www.twitch.tv/koskonrad"
+    style="color:#fff; font-size:1.2em; display:block; margin-bottom:20px;"
+    target="_blank">
+      ➤ Besuche Konrad persönlich
+  </a>
+      © 2025 deine.mom — Fettigkeit für alle. Kontakt: ich.fick@deine.mom
   </footer>
 
+  <script src="/functions.js"></script>
+  <script src="/hamburgermenu.js"></script>
   <script>
-    const socket = new WebSocket("wss://" + window.location.host);
-    socket.onopen = () => console.log("WebSocket-Verbindung hergestellt!");
-    socket.onmessage = event => {
-      const data = JSON.parse(event.data);
-      document.querySelector('.count').textContent = data.count;
-    };
+    createHamburgerMenu()
+  
+    openWebSocket(({ fettig_count }) => {
+      document.querySelector('.count').textContent = fettig_count;
+    })
 
     const button = document.getElementById("fettigkeitButton");
     const originalSize = {
@@ -111,12 +114,8 @@
     let resizeTimeout;
 
     function increaseFettigkeit() {
-      fetch('/click', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => console.log('Neuer Fettigkeitswert:', data.count))
-        .catch(e => console.error(e));
+      increaseCount('fettigkeit')
 
-      // Button wächst um 10% pro Klick
       let currentSize = parseFloat(getComputedStyle(button).fontSize);
       button.style.fontSize = (currentSize * 1.1) + "px";
       button.style.padding =

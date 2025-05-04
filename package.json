@@ -2,13 +2,17 @@
   "name": "fettigkeit-server",
   "version": "1.0.0",
   "description": "Server for Fettigkeit game",
-  "main": "server.js",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/server.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "mysql2": "^3.14.1",
     "redis": "^4.7.0",
     "ws": "^8.18.1"
   }

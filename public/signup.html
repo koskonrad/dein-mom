@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="/functions.js"></script>
+</head>
+<body>
+    <style>
+    @import url('/styles.css');
+    </style>
+    
+    <div id="login">
+        <input id="username" />
+        <input id="password" type="password" />
+
+        <button id="button">erstellen du hs</button>
+    </div>
+    <script>
+        const username = document.getElementById('username')
+        const password = document.getElementById('password')
+        const button = document.getElementById('button')
+
+        button.addEventListener('click', async () => {
+            try {
+                await register(username.value, password.value);
+                window.location = '/login'
+            } catch (e) {
+                alert('bro der nutzer existiert schon oder du hast kein passwort. Bist du kernbehindert?')
+                console.log(e)
+            }
+        })
+    </script>
+
+</body>
+</html>
