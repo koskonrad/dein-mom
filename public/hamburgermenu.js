@@ -14,13 +14,13 @@ async function createHamburgerMenu() {
       if (path === '/') {
         // Root: Stats & Konrad
         links = [
-          `<a href="/stats">Stats für ${me.username}</a>`,
+          `<a href="/stats">Deine Stats</a>`,
           `<a href="/konrad">Konrad</a>`
         ];
       } else if (path === '/konrad') {
         // Konrad-Seite: Stats & Mom
         links = [
-          `<a href="/stats">Stats für ${me.username}</a>`,
+          `<a href="/stats">Deine Stats</a>`,
           `<a href="/">Mom</a>`
         ];
       } else if (path === '/stats') {
@@ -32,7 +32,7 @@ async function createHamburgerMenu() {
       } else {
         // Fallback für alle anderen URLs
         links = [
-          `<a href="/stats">Stats für ${me.username}</a>`,
+          `<a href="/stats">Deine Stats</a>`,
           `<a href="/">Mom</a>`,
           `<a href="/konrad">Konrad</a>`
         ];

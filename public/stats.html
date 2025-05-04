@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Deine Fette Mom</title>
   <style>
-        @import url('/styles.css');
+    @import url('/styles.css');
+
     html, body {
       background-color: #000;
       margin: 0;
@@ -13,8 +14,11 @@
       overflow: hidden;
       height: 100%;
     }
+
     .stats {
       position: absolute;
+      top: 0;
+      left: 0;
       border: #fff 10px solid;
       font-size: 6rem;
       background: linear-gradient(to right, red, purple, blue, cyan, green, yellow, orange, red);
@@ -22,10 +26,15 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       white-space: nowrap;
-      top: 0;
-      left: 0;
       z-index: 1000;
     }
+    @media (max-width: 720px) {
+      .stats {
+        font-size: 2rem;
+        border: #fff 5px solid;
+      }
+    }
+
     .glitch-clone {
       position: absolute;
       border: #fff 10px solid;
@@ -37,23 +46,31 @@
       white-space: nowrap;
       z-index: 999;
     }
+    @media (max-width: 720px) {
+      .glitch-clone {
+        font-size: 2rem;
+        border: #fff 5px solid;
+      }
+    }
   </style>
 </head>
 <body>
-
-    <div id="burger-menu"></div>
+  <div id="burger-menu"></div>
 
   <div class="stats">
-    stats für: <span id="name">–</span><br>
-    deine mom kg: <span id="mom-kg">0</span><br>
-    deine konrad kg: <span id="konrad-kg">0</span><br>
+    Deine Stats:<br>
+    Mom kg: <span id="mom-kg">0</span><br>
+    Konrad kg: <span id="konrad-kg">0</span><br>
   </div>
 
   <script>
-    // Initiales Befüllen
-    fetch('/me').then(r=>r.json()).then(d=>document.getElementById('name').innerText = d.username);
-    fetch('/mom').then(r=>r.json()).then(d=>document.getElementById('mom-kg').innerText = d.count);
-    fetch('/fettigkeit').then(r=>r.json()).then(d=>document.getElementById('konrad-kg').innerText = d.count);
+    // Daten holen
+    fetch('/mom')
+      .then(r => r.json())
+      .then(d => document.getElementById('mom-kg').innerText = d.count);
+    fetch('/fettigkeit')
+      .then(r => r.json())
+      .then(d => document.getElementById('konrad-kg').innerText = d.count);
   </script>
   <script src="/hamburgermenu.js"></script>
 
@@ -63,52 +80,67 @@
   </script>
 
   <script>
-    createHamburgerMenu()
+    createHamburgerMenu();
+
     window.addEventListener("DOMContentLoaded", () => {
-      const orig      = document.querySelector(".stats");
-      let x           = Math.random()*(window.innerWidth-orig.offsetWidth),
-          y           = Math.random()*(window.innerHeight-orig.offsetHeight);
-      let vx          = 3, vy = 2;
-      const baseVx    = vx, baseVy = vy;
-      let glitched    = false;
+      const orig = document.querySelector(".stats");
+
+      // Mobile-Abfrage
+      const isMobile    = window.matchMedia("(max-width: 720px)").matches;
+      // langsamer initial auf Mobile
+      let vx = isMobile ? 1.5 : 3;
+      let vy = isMobile ? 1   : 2;
+      const baseVx = vx, baseVy = vy;
+      // mobile-abhängige Faktoren
+      const accelFactor = isMobile ? 1.05 : 1.2;
+      const jitterAmt   = isMobile ? 0.2  : 0.5;
+
+      // Startposition
+      let x = Math.random() * (window.innerWidth  - orig.offsetWidth);
+      let y = Math.random() * (window.innerHeight - orig.offsetHeight);
 
       orig.style.left = x + "px";
       orig.style.top  = y + "px";
 
+      let glitched = false;
+
       function animate() {
-        // Bounce & Speed-Up
-        if (x <= 0 || x + orig.offsetWidth  >= window.innerWidth)  vx = -vx*1.2;
-        if (y <= 0 || y + orig.offsetHeight >= window.innerHeight) vy = -vy*1.2;
-        
-        // Zufalls-Jitter auch für Original, wenn Glitch gestartet
+        // Bounce mit mobile‐abhängigem Faktor
+        if (x <= 0 || x + orig.offsetWidth  >= window.innerWidth)  vx = -vx * accelFactor;
+        if (y <= 0 || y + orig.offsetHeight >= window.innerHeight) vy = -vy * accelFactor;
+
+        // Jitter nach Glitch
         if (glitched) {
-          vx += (Math.random()-0.5)*0.5;
-          vy += (Math.random()-0.5)*0.5;
+          vx += (Math.random() - 0.5) * jitterAmt;
+          vy += (Math.random() - 0.5) * jitterAmt;
         }
 
         x += vx; y += vy;
-        orig.style.left = Math.max(0, Math.min(x, window.innerWidth - orig.offsetWidth)) + "px";
+        orig.style.left = Math.max(0, Math.min(x, window.innerWidth  - orig.offsetWidth)) + "px";
         orig.style.top  = Math.max(0, Math.min(y, window.innerHeight - orig.offsetHeight)) + "px";
 
-        if (!glitched && (Math.abs(vx/baseVx)>=40 || Math.abs(vy/baseVy)>=40)) {
+        // Glitch‐Trigger ab 40× Ursprungsgeschwindigkeit
+        if (!glitched && (Math.abs(vx/baseVx) >= 40 || Math.abs(vy/baseVy) >= 40)) {
           glitched = true;
           spawnClones();
         }
+
         requestAnimationFrame(animate);
       }
       animate();
 
       function spawnClones() {
-        const rect   = orig.getBoundingClientRect();
+        const rect = orig.getBoundingClientRect();
         const clones = [];
-        for (let i=0; i<12; i++){
-          const c        = orig.cloneNode(true);
+        for (let i = 0; i < 12; i++) {
+          const c = orig.cloneNode(true);
           c.classList.add("glitch-clone");
           document.body.appendChild(c);
-          c._x           = rect.left;
-          c._y           = rect.top;
-          c._vx          = (Math.random()*6+2)*(Math.random()<0.5?-1:1);
-          c._vy          = (Math.random()*6+2)*(Math.random()<0.5?-1:1);
+          // initiale Position & Geschwindigkeit
+          c._x  = rect.left;
+          c._y  = rect.top;
+          c._vx = (Math.random() * (isMobile ? 3 : 6) + (isMobile ? 1 : 2)) * (Math.random() < 0.5 ? -1 : 1);
+          c._vy = (Math.random() * (isMobile ? 3 : 6) + (isMobile ? 1 : 2)) * (Math.random() < 0.5 ? -1 : 1);
           clones.push(c);
         }
         animateClones(clones);
@@ -116,17 +148,20 @@
 
       function animateClones(clones) {
         clones.forEach(c => {
-          // Zufalls-Jitter
-          c._vx += (Math.random()-0.5)*0.5;
-          c._vy += (Math.random()-0.5)*0.5;
+          // Zufalls-Jitter für Klone
+          c._vx += (Math.random() - 0.5) * jitterAmt;
+          c._vy += (Math.random() - 0.5) * jitterAmt;
+
           // Bounce
           if (c._x <= 0 || c._x + c.offsetWidth  >= window.innerWidth)  c._vx = -c._vx;
-          if (c._y <= 0 || c._y + c.offsetHeight>= window.innerHeight) c._vy = -c._vy;
-          c._x += c._vx; c._y += c._vy;
-          c.style.left = Math.max(0, Math.min(c._x, window.innerWidth - c.offsetWidth)) + "px";
+          if (c._y <= 0 || c._y + c.offsetHeight >= window.innerHeight) c._vy = -c._vy;
+
+          c._x += c._vx;
+          c._y += c._vy;
+          c.style.left = Math.max(0, Math.min(c._x, window.innerWidth  - c.offsetWidth)) + "px";
           c.style.top  = Math.max(0, Math.min(c._y, window.innerHeight - c.offsetHeight)) + "px";
         });
-        requestAnimationFrame(()=>animateClones(clones));
+        requestAnimationFrame(() => animateClones(clones));
       }
     });
   </script>
