@@ -2,15 +2,23 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport"
+        content="width=device-width,
+                 initial-scale=1,
+                 maximum-scale=1,
+                 user-scalable=no">
   <title>Deine Fette Mom</title>
   <style>
     @import url('/styles.css');
     
     html, body {
-      background: url('/assets//background.png') no-repeat center center fixed;
+      background: url('/assets/background.png') no-repeat center center fixed;
       background-size: cover;
-      color: #000000;
+      color: #000;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
     }
 
     body {
@@ -30,7 +38,6 @@
       margin-bottom: 20px;
     }
 
-    /* Nur die Klasse geändert */
     .countmom {
       font-size: 2em;
       margin-top: 20px;
@@ -43,12 +50,22 @@
       aspect-ratio: 9 / 16;
       margin: 0 auto;
       transition: width 0.3s ease;
+      /* Verhindert Textauswahl und Drag auf Mobile/Desktop */
+      user-select: none;
+      -webkit-user-drag: none;
+      -ms-user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .button-text {
-      font-size: 2.5em;
-      color: #000000;
-      text-align: center;
+    .button-image {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border: none;
+      background-color: transparent;
+      user-select: none;
+      -webkit-user-drag: none;
     }
 
     .sprechblase-image {
@@ -57,13 +74,12 @@
       left: 40px;
       width: 150px;
       height: 150px;
+      background: url('/assets/sprechblase.png') no-repeat center/contain;
       border: none;
       background-color: transparent;
-      background-image: url('/assets/sprechblase.png');
-      background-size: contain;
-      background-repeat: no-repeat;
-      color: #000000;
+      color: #000;
       font-size: 1.5em;
+      pointer-events: none;
     }
 
     footer {
@@ -74,7 +90,6 @@
       color: #aaa;
       font-size: 0.9em;            
     }
-
   </style>
 </head>
 <body>
@@ -82,37 +97,40 @@
 
   <div class="content">
     <h1>Wie fett ist deine Mom?</h1>
-    <!-- hier class="count" → class="countmom" -->
     <p>Deine Mom wiegt <span class="countmom">0</span> kg!</p>
   </div>
 
   <div class="image-button-wrapper" id="fettigkeitButton">
-
-    <img src="/assets/Konrad1.png" alt="Button-Grafik" class="button-image" onclick="increaseMom()" style="width: 100%;">
-
-  <button class="sprechblase-image" onclick="increaseMom()">
-  KlICK MICH!
-  </button>
-
+    <img
+      src="/assets/Konrad1.png"
+      alt="Button-Grafik"
+      class="button-image"
+      onclick="increaseMom()"
+      draggable="false">
+    <button
+      class="sprechblase-image"
+      onclick="increaseMom()"
+      draggable="false">
+      KLICK MICH!
+    </button>
   </div>
 
   <footer>
-     © 2025 deine.mom — Fettigkeit für alle. Kontakt: ich.fick@deine.mom
+    © 2025 deine.mom — Fettigkeit für alle. Kontakt: ich.fick@deine.mom
   </footer>
   
   <script src="/functions.js"></script>
   <script src="/hamburgermenu.js"></script>
   <script>
-    createHamburgerMenu()
+    createHamburgerMenu();
 
     openWebSocket(({ mom_count }) => {
       document.querySelector('.countmom').textContent = mom_count;
       updateButtonSize(mom_count);
-    })
+    });
 
-    const increaseMom = () => increaseCount('mom')
+    const increaseMom = () => increaseCount('mom');
 
-    // updateButtonSize bleibt exakt gleich, nur Parameter heißt now countmom
     function updateButtonSize(countmom) {
       const baseWidth   = 200;
       const scaleFactor = 0.008;
