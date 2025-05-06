@@ -14,7 +14,9 @@
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.1",
     "mysql2": "^3.14.1",
+    "node-fetch": "^3.3.2",
     "redis": "^4.7.0",
+    "request-ip": "^3.3.0",
     "ws": "^8.18.1"
   }
 }
