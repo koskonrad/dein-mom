@@ -1,16 +1,16 @@
 // routes/auth.js
-const pool              = require("../db");
-const { authenticate }  = require("../authenticate");
-const bcrypt            = require("bcryptjs");
-const { lookupLocation }= require("../lib/geo");
+const pool               = require("../db");
+const { authenticate }   = require("../authenticate");
+const bcrypt             = require("bcryptjs");
+const requestIp          = require("request-ip");
+const { lookupLocation } = require("../lib/geo");
 
 module.exports = function (app) {
-  // ---------------------------------------
-  // 1) LOGIN
-  // ---------------------------------------
+  // Login-Route
   app.post("/login", async (req, res) => {
     const { username, password } = req.body;
-    // Benutzer suchen
+
+    // 1) Benutzer suchen
     const [rows] = await pool.query(
       "SELECT id, password_hash FROM users WHERE username = ?",
       [username]
@@ -18,18 +18,41 @@ module.exports = function (app) {
     if (rows.length === 0) return res.status(401).send("Ungültig");
 
     const user = rows[0];
-    // Passwort prüfen
+
+    // 2) Passwort prüfen
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).send("Ungültig");
 
-    // Session setzen
+    // 3) Session setzen
     req.session.userId = user.id;
+
+    // 4) IP & Location ermitteln
+    const ip = req.clientIp;
+    let loc = {};
+    try {
+      loc = await lookupLocation(ip);
+    } catch {
+      loc = {};
+    }
+
+    // 5) Login-Event speichern (ohne Lat/Long)
+    await pool.execute(
+      `INSERT INTO login_events
+         (user_id, ip, country, region, city, created_at)
+       VALUES (?, ?, ?, ?, ?, NOW())`,
+      [
+        user.id,
+        ip,
+        loc.country || null,
+        loc.region  || null,
+        loc.city    || null
+      ]
+    );
+
     res.sendStatus(200);
   });
 
-  // ---------------------------------------
-  // 2) LOGOUT
-  // ---------------------------------------
+  // Logout-Route
   app.get("/logout", (req, res) => {
     req.session.destroy(err => {
       if (err) return res.sendStatus(500);
@@ -38,13 +61,11 @@ module.exports = function (app) {
     });
   });
 
-  // ---------------------------------------
-  // 3) REGISTER (SIGNUP) + IP- & Geolocation-Log
-  // ---------------------------------------
+  // Register-Route
   app.post("/register", async (req, res) => {
     const { username, password } = req.body;
 
-    // 3.1) Existenz prüfen
+    // 1) Existenz prüfen
     const [existing] = await pool.query(
       "SELECT id FROM users WHERE username = ?",
       [username]
@@ -53,53 +74,49 @@ module.exports = function (app) {
       return res.status(409).send("Benutzer existiert bereits");
     }
 
-    // 3.2) neuen User anlegen
+    // 2) User anlegen
     const password_hash = await bcrypt.hash(password, 10);
     const [addUser] = await pool.execute(
       "INSERT INTO users (username, password_hash) VALUES (?, ?)",
       [username, password_hash]
     );
-    const userId = addUser.insertId;  // <-- korrekte ID!
+    const userId = addUser.insertId;
 
-    // 3.3) IP & Location erfassen
-    const ip = req.clientIp;  // vorausgesetzt: in server.js ist request-ip middleware aktiv
-    let location = {};
+    // 3) IP & Location ermitteln
+    const ip = req.clientIp;
+    let loc = {};
     try {
-      location = await lookupLocation(ip);
-    } catch (e) {
-      console.warn("Geolookup fehlgeschlagen:", e);
+      loc = await lookupLocation(ip);
+    } catch {
+      loc = {};
     }
 
-    // 3.4) in signup_events speichern
+    // 4) Signup-Event speichern
     await pool.execute(
       `INSERT INTO signup_events
-         (user_id, ip, country, region, city, latitude, longitude, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+         (user_id, ip, country, region, city, created_at)
+       VALUES (?, ?, ?, ?, ?, NOW())`,
       [
         userId,
         ip,
-        location.country  || null,
-        location.region   || null,
-        location.city     || null,
-        location.latitude || null,
-        location.longitude|| null
+        loc.country || null,
+        loc.region  || null,
+        loc.city    || null
       ]
     );
 
-    // 3.5) Zähler-Tabelle initialisieren
+    // 5) Zähler initialisieren
     await pool.execute(
       "INSERT INTO user_counts (user_id) VALUES (?)",
       [userId]
     );
 
-    // 3.6) Session setzen & Antwort
+    // 6) Session setzen
     req.session.userId = userId;
     res.sendStatus(201);
   });
 
-  // ---------------------------------------
-  // 4) „/me“-Route (Status abfragen)
-  // ---------------------------------------
+  // Me-Route
   app.get("/me", authenticate, async (req, res) => {
     const [rows] = await pool.query(
       "SELECT username FROM users WHERE id = ?",
